@@ -1,0 +1,206 @@
+---
+title: "How to Make a Survival Curve in R"
+output:
+  html_document:
+    keep_md: true
+    df_print: paged
+---
+
+## A Univariable Look at Time-to-Event Data
+
+### Time waits for no-one.
+In clinical research (among other fields) there is often keen interest in **survival data**, how long it takes for an event to happen (ie. death or disease progression), and how it can be affected by other variables. In this entry we'll look at how you can **structure** the data, **visualise** it, and apply a **statistical test** to help draw a conclusion from it. 
+
+This article is for beginners with R, and it doesn’t matter if you’re a student or a professional. To follow along, you'll need an installation of R (although we generally advise using RStudio as well!), although you will need to install one external package of code (this is easy). Hopefully, you can follow along and simply run the code chunks below for yourself - and go on to perform similar analyses on your own data. 
+
+Check our other articles for more R!
+
+# 0. Install the Survival Package
+
+* We need to use the `survival` package (also known as a library).
+* It's super easy to install (most) packages.
+* A package is a bundle of code and data that has been been published online and is freely accessible. 
+* You only need to install it once - using the following line of code.
+
+```{r Intall survival}
+#install.packages("survival") # this should install survival - it'll ask you what source to use as well
+```
+
+Once a package is loaded, you have to load it into your R session - using the `library()` function.
+
+```{r Load survival}
+library(survival) # this function loads an installed package
+```
+
+# 1. Examine the Data
+
+* The survival package comes with some data we can use - no need to import anything.
+* Alternatively, you could read some data from somewhere else; see our other articles for tips with this!
+
+### The Lung Dataset
+
+```{r load Lung data}
+data(lung) # load the data
+str(lung) # and look at the structure of it
+```
+We can see that this is a `data.frame` object, with a number of data columns.
+The key columns for survival analysis are:
+
+* A column for time - this could be overall survival or time to disease progression. Here it's listed as '*time*', and it's numeric. 
+* A column for censoring status - whether or not the *event* happened (ie. death, disease progression, etc) or the individual dropped out for another reason (ie. left study, lost to followup, survived until the end of the study, etc). Here the column is called '*status*'.
+
+There are also some other descriptive columns - institute ID, performance scores (overall health indicators), weight loss over the last 6 months. We'll talk about them later.
+
+More details can be found here: https://stat.ethz.ch/R-manual/R-devel/library/survival/html/lung.html
+
+A brief note about the **censor** column, the convention here is that:
+
+* 0 = censored, 1 = event
+* or alternatively, 1 = censored, 2 = event
+
+For the `lung` data above it's already in a good format - but if you load your own data in you'll need to customise it to fit one of these styles (0/1 or 1/2). 
+
+# 2. Calculate Survival
+
+We can use a couple of handy functions from `survival` to take a look at the data and make some summaries. An important function to use will be `Surv()`.
+
+```{r}
+lungsurvival = Surv(lung$time,lung$status) # make a survival time object
+head(lungsurvival) # take a look at the first 5 elements
+```
+
+The object we made here is essentially a vector of survival times, with `+` symbols appended to show when censoring has taken place. We will use this going forward. 
+
+### Fitting the Data
+
+The `survfit()` function is a key element of the survival package, and it fits survival curves to our data. We can have a quick go as follows.
+```{r}
+survfit(formula = lungsurvival ~ 1) # make the simplest survival curve object
+```
+This is another formula interface function - see our other articles. We're telling `survfit()` to fit a survival curve (more on these later) to the data (the `lungsurvival` object we made), and we can tell it to use the whole dataset by simply including a `1` in the formula. This call outputs:
+
+* The number of entries and the number of events in the dataset.
+* Summary statistics - the **median survival**, along with the **95% confidence interval**.
+
+For the record, we can also do this: `survfit(formula = Surv(time,status) ~ 1,data=lung)` - note the modified syntax with the data parameter.
+
+We can look more closely at how the survival proportion over time by using the `summary()` function. For convenience we can save the fit to a variable called `lungfit`.
+
+```{r}
+lungfit = survfit(formula = lungsurvival ~ 1) # save the fit 
+summary(lungfit, times = c(0,100,200,500,1000)) # we can specify whatever times we like
+```
+Nice. This sort of information is frequently used in **risk tables**. What we are calculating using these functions is called the *'Kaplan-Meier estimator'*, a non-parametric way to estimate survival probabilities over time. 
+
+We can also convert these data into a simple plot: the `survival` package contains instructions to tell the basic R `plot()` function how to plot it.
+
+```{r fig.height=4, fig.width=5,fig.align='center'}
+plot(survfit(formula = lungsurvival ~ 1, data=lung), 
+     ylab = "Survival Proportion", 
+     xlab = "Time",
+     main = "Overall Lung Dataset Survival")
+```
+
+Ok, looking plausible. This is often called a **Kaplan-Meier Curve** (or Kaplan-Meier Plot). 
+
+### Stratify by a Variable
+
+There are multiple variables in the `lung` data set. We can explore them with a modified call to `survfit`, substituting the `1` with the name of the variable, and including a *data* argument to tell the function where to find it. 
+
+```{r}
+survfit(formula = lungsurvival ~ sex, data=lung) # performance status of individuals
+```
+
+This shows a breakdown of survival statistics (ie. median survival and confidence intervals) for **each level of the variable** in the data. Do these values look different? Can we observe a trend?
+
+```{r fig.height=4, fig.width=5,fig.align='center'}
+plot(survfit(formula = lungsurvival ~ sex, data=lung), 
+     ylab = "Survival Proportion", 
+     xlab = "Time", 
+     main = "Lung Dataset Split by Variable")
+```
+
+This approach works best for *categorical* variables (the `ph.ecog` variable would work well too); if we tried it with a *continuous* one it looks rather odd (`meal.cal`, for example). Try it out?
+
+### Stratify by Multiple Variables
+
+The `survfit()` function is clever - we can give it multiple variables at the same time and it calculates survival proportions for each combination of the variables. 
+
+```{r}
+survfit(formula = lungsurvival ~ sex + ph.ecog, data=lung) # performance status of individuals
+```
+
+We can see that the different levels of these variables are shown in the output - and that the usage of `summary()` (like above) will show a detailed output.
+
+```{r fig.height=4, fig.width=5,fig.align='center'}
+plot(survfit(formula = lungsurvival ~ sex + ph.ecog, data=lung), 
+     ylab = "Survival Proportion", 
+     xlab = "Time", 
+     main = "Lung Dataset Split by Two Variables")
+```
+These plots are a bit bland. We can improve them a little.
+
+# 3. Tweaking the Plots
+
+We can add colours and a legend to the lines in these plots. Colours are assigned by the levels of the variable, as can be seen in the `survfit()` call. Here we'll look at the **ECOG performance status** variable - which has four levels. 
+
+```{r}
+survfit(formula = lungsurvival ~ ph.ecog, data=lung)
+lungfit = survfit(formula = lungsurvival ~ ph.ecog, data=lung) # make an object for the fit
+```
+
+We can use this to plot with.
+
+```{r fig.height=4, fig.width=5,fig.align='center'}
+oldpar = par(no.readonly = TRUE) # make a copy of the default graphical parameters
+par(bg = "ivory") # this lets us specify an overall background colour
+
+
+plot(lungfit, # plot this using 'plot' 
+     ylab = "Survival Proportion", 
+     xlab = "Time", 
+     main = "Lung Dataset With Colours",
+     mark.time = T, # include little tick marks to indicate when censoring happens
+     lwd = 2, # increase the line thickness
+     col = c("darkorange","darkorange2","darkorange3","darkorange4"), # add colours in the order we want
+     bty = "n", # remove the border
+     las = 1) # adjust the angle of the axis numbers
+
+legend("topright", # you can feed in x-y coordinates, or just a keyword
+       legend = names(lungfit$strata), # give it the unique levels
+       col=c("darkorange","darkorange2","darkorange3","darkorange4"), # colours in the same order
+       bg = NA, # remove the background colour
+       lty=1, # add a line to the legend
+       lwd=2, # thicker line
+       box.lty=0) # remove legend border
+
+par(oldpar)
+```
+Changing various elements is pretty straightforward - and in this case we can see that there's a reduction in survival as the value for `ph.ecog` increases. As this value relates to an overall measurement of how healthy a patient is, this makes sense. 
+
+# 4. Do a Statistical Test
+
+To continue exploring these data, we can perform an appropriate statistical test to compare the survival distributions of these curves, with a **null hypothesis** that the the groups have no difference. We aren't diving deep into this topic here, and there are many other resources to learn more about this. 
+
+The `survdiff()` function is straightforward to use, with the same syntax as the `survfit()` function we used earlier. This performs a *log-rank test*.
+
+```{r}
+survdiff(formula = lungsurvival ~ sex, data=lung) # survdiff!
+```
+We can also apply this test to a variable that has more than two groups - like `ph.ecog` (which has four levels), and it generates a p-value, but it doesn't explicitly tell use which groups are different to each other, just that *overall* there is a difference. It's a starting point, but for complicated survival data with multiple variables we may need more than a simple log-rank test...
+
+```{r}
+survdiff(formula = lungsurvival ~ ph.ecog, data=lung) # different variable to above
+ecog_p = survdiff(formula = lungsurvival ~ ph.ecog, data=lung)
+```
+
+# 5. Final Thoughts
+
+This article is really just a start to performing survival analysis, and there's certainly more to cover.
+The key elements to remember are as follows:
+
+- To estimate **survival probabilities** over time, you need *time* and *censoring status* data.
+- The `survival` package is the core library for this type of analysis in R.
+- It allows you to collate **summary statistics** about your overall population, and about subgroups. 
+- You can plot **survival curves** (Kaplan-Meier plots) to visualise these.
+- A **statistical test** like the log-rank test can help us draw conclusions from the data.
