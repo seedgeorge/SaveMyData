@@ -59,19 +59,78 @@ Of note here is that we can see how the `Ozone` and `Solar.R` variables in the d
 # 2. Make a Basic Plot
 
 It's often very helpful to make a quick graph to get a feel for your data. Here we can use the `plot()` function to quickly compare two variables.
-```{r fig.height=5, fig.width=5,fig.align='center'}
+```{r singleplot, fig.height=5, fig.width=5,fig.align='center'}
 plot(x = airquality$Wind, # the data for the x-axis
      y = airquality$Temp, # the data for the y-axis
      main = "A Quick Comparison") # the title of the plot
 ```
-From a quick eyeball, it looks like as wind speed increases, temperature decreases. What about the other variables in this dataset?
+From a quick eyeball, it looks like as wind speed increases, temperature decreases. Why not try plotting some of the other variables in the dataset?
 
-The `plot()` function is clever, and will make multiple correlations if we ask it to. We can simply give it multiple columns, using the square bracket notation -  `[,1:4]` - and it will plot every column against every other column.
-```{r fig.height=6, fig.width=6,fig.align='center'}
-plot(airquality[c(1:4)])
-```
+<!-- The `plot()` function is clever, and will make multiple correlations if we ask it to. We can simply give it multiple columns, using the square bracket notation -  `[,1:4]` - and it will plot every column against *every other* column. The plot we've made already, `wind vs temp` can be found in the **3rd column, bottom row**.  -->
+
+<!-- ```{r multiplot, fig.height=6, fig.width=6,fig.align='center'} -->
+<!-- plot(airquality[,c(1:4)]) -->
+<!-- ``` -->
+
+<!-- The variables are plotted against each other, in all possible combinations - including switching which variables are on each axis. This is called a scatter plot matrix, and can be a handy way to get an idea about how your data might correlate. -->
 
 # 3. Tweak the Plot to Your Liking
+
+Customising your visualisations is part of the fun of data science. We can, of course, adjust the scatter plot we've made already to make it fit in with any style.
+
+Here are some possible alterations - note the removal of the default axis and the separate use of the `axis()` function for the x- and y-axes. 
+```{r nicerplot, fig.height=5, fig.width=5,fig.align='center'}
+plot(x = airquality$Wind, # the data for the x-axis
+     y = airquality$Temp, # the data for the y-axis
+     xlim = c(0,25), # set the x-axis limits
+     ylim = c(50,100), # set the y-axis limits
+     xlab = "Wind Speed (mph)", # name the x-axis,
+     ylab = "Temperature (F)", # name the y-axis,
+     pch = 16, # shape of the points 
+     col = "slategrey", # colour for the points
+     axes = FALSE, # we will edit the axis a little ourselves
+     main = "Correlation of wind speed\nagainst temperature") # the title of the plot
+axis(1,seq(0,25,5),col = NA, col.ticks = 1) # design the x-axis specifically
+axis(2,seq(50,100,10),las=1,col = NA, col.ticks = 1) # design the y-axis specifically
+
+```
+
+
+# 4. Do a Statistical Test
+
+These variables can be easily compared to each other with a correlation test, using the `cor()` function.
+```{r pearsoncor}
+cor(x = airquality$Wind, y = airquality$Temp)
+```
+By default, this function calculates the Pearson's *r* value, which measures a linear association between two variables, and ranges between -1 and 1.
+
+* A 1 would be a perfect 'positive' correlation, indicating that as the x-axis variable increases, so does the y-axis variable
+* Values closer to 0 indicate a poor or non-existant correlation.
+* A value of -1 indicates a perfect 'negative' correlation, with the x-axis variable increasing and the y-axis variable decreasing. 
+
+The `-0.4579879` above, therefore, suggests a moderate negative correlation, which seems reasonable when we look at the plot. As wind speed increases, recorded temperature decreases - but it's not a perfect correlation.
+
+Incidentally, we could use a different type of *correlation coefficient* - such as Spearman's, by changing the code a little.
+
+```{r spearmancor}
+cor(x = airquality$Wind, y = airquality$Temp, method="spearman")
+```
+
+# 5. Plot a Straight Line
+
+These data seem to have some correlation, and it'd be good to visualise that. In fact, they look linear - we could probably summarise that with a straight line.
+
+We can calculate a 'linear regression' (or 'linear model'), which will let us both quantify the relationship a bit more between the variables, and give us the information needed to plot a straight line onto the graph. Saving it into a variable (`temp_wind_line`) will be useful later.
+
+```{r lm}
+temp_wind_line = lm(formula = Temp ~ Wind, # y-axis variable ~ x-axis variable
+   data=airquality) # where are these variables found
+summary(temp_wind_line) # 
+```
+Using a 'formula' in a function like this will be familiar if you've read our other article on box plots - the thing to remember is that the dependent variable comes first, and in this case the dependent variable is Temperature - the one on the y-axis. 
+
+[insert something here]
+
 ```{r fig.height=5, fig.width=5,fig.align='center'}
 plot(x = airquality$Wind, # the data for the x-axis
      y = airquality$Temp, # the data for the y-axis
@@ -81,24 +140,10 @@ plot(x = airquality$Wind, # the data for the x-axis
      ylab = "Temperature (F)", # name the y-axis,
      pch = 16, # shape of the points 
      col = "slategrey", # colour for the points
-     axes = FALSE,
-     main = "A Quick Comparison") # the title of the plot
-axis(1,seq(0,25,5))
-axis(2,seq(50,100,10),las=1)
+     axes = FALSE, # we will edit the axis a little ourselves
+     main = "Correlation of wind speed\nagainst temperature") # the title of the plot
+axis(1,seq(0,25,5),col = NA, col.ticks = 1) # design the x-axis specifically
+axis(2,seq(50,100,10),las=1,col = NA, col.ticks = 1) # design the y-axis specifically
 
+abline(temp_wind_line, lwd=2,col="tomato")
 ```
-
-
-# 4. Do a Statistical Test
-
-These variables can be easily compared to each other with a correlation test, using the `cor()` function.
-```{r}
-cor(x = airquality$Wind, y = airquality$Temp)
-```
-By default, this function calculates the 'pearson' *r* value, which measures a linear association between two variables, and ranges between -1 and 1.
-
-* A 1 would be a perfect 'positive' correlation, indicating that as the x-axis variable increases, so does the y-axis variable
-* Values closer to 0 indicate a poor or non-existant correlation.
-* A value of -1 indicates a perfect 'negative' correlation, with the x-axis variable increasing and the y-axis variable decreasing. 
-
-Values in between, like the `-0.4579879` above, suggest some degree of dispersion from a perfect line. 
