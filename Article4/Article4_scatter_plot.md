@@ -9,9 +9,9 @@ output:
 ## Comparing Continuous Data
 
 ### Numbers are Fun
-Continuous data are numbers - typically, from taking measurements, and you can find such data in many fields. In this entry we'll look at how you can **structure** a collection of such data, **visualise** it, and apply a **statistical test** to compare such data. 
+Continuous data are numbers, typically from taking measurements, and you can find this data type in many fields. In this entry we'll look at how you can **structure** a collection of such data, **visualise** it, and apply a **statistical test** to compare the values. 
 
-This article is for beginners with R, and it doesn’t matter if you’re a student or a professional. To follow along, you'll need an installation of R (although we generally advise using RStudio as well!), and you won't need do download any external data or packages. Hopefully, you can follow along and simply run the code chunks below for yourself - and go on to perform similar analyses on your own data. 
+This article is for beginners with R, and it doesn’t matter if you’re a student or a professional. You'll need an installation of R (we generally advise using RStudio as well!), and you won't need do download any external data or packages. Hopefully, you can follow along and simply run the code chunks below for yourself - and go on to perform similar analyses on your own data. 
 
 Check our other articles for more R!
 
@@ -27,7 +27,7 @@ Check our other articles for more R!
 data(airquality)
 ```
 
-Easy! There are lots of other datasets available with R, and they're great for practicing various data science tasks. 
+There are lots of other datasets available with R, and they're great for practicing various data science tasks. 
 
 # 1. Examine the Data
 
@@ -67,6 +67,7 @@ The measurements we are interested in are the first four columns, which describe
 * solar radiation
 * average wind speed
 * maximum daily temperature
+
 The final two columns detail when the measurements were collected.
 
 In case you're interested in individual stats for each variable, the `summary()` function enables us to easily explore some summary statistics for these data.
@@ -94,7 +95,7 @@ summary(airquality)
 ## 
 ```
 
-Of note here is that we can see how the `Ozone` and `Solar.R` variables in the data have some missing values, which we will need to pay attention to later on.
+Of note here is that we can see how the `Ozone` and `Solar.R` variables in the data have some missing values (NA's), which we will need to pay attention to later on.
 
 # 2. Make a Basic Plot
 
@@ -109,20 +110,35 @@ plot(x = airquality$Wind, # the data for the x-axis
 <img src="Article4_scatter_plot_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
 From a quick eyeball, it looks like as wind speed increases, temperature decreases. What about the other variables in this dataset?
 
+The `plot()` function is clever, and will make multiple correlations if we ask it to. We can simply give it multiple columns, using the square bracket notation -  `[,1:4]` - and it will plot every column against every other column.
 
 ```r
-plot(airquality[,1:4]) # we can give multiple columns (1 to 4) 
+plot(airquality[c(1:4)])
 ```
 
 <img src="Article4_scatter_plot_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" />
 
+# 3. Tweak the Plot to Your Liking
+
 ```r
-# it will try to plot them all as well 
+plot(x = airquality$Wind, # the data for the x-axis
+     y = airquality$Temp, # the data for the y-axis
+     xlim = c(0,25), # set the x-axis limits
+     ylim = c(50,100), # set the y-axis limits
+     xlab = "Wind Speed (mph)", # name the x-axis,
+     ylab = "Temperature (F)", # name the y-axis,
+     pch = 16, # shape of the points 
+     col = "slategrey", # colour for the points
+     axes = FALSE,
+     main = "A Quick Comparison") # the title of the plot
+axis(1,seq(0,25,5))
+axis(2,seq(50,100,10),las=1)
 ```
 
-This should be fairly intuitive. 
+<img src="Article4_scatter_plot_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
-# 3. Do a Quick Statistical Test
+
+# 4. Do a Statistical Test
 
 These variables can be easily compared to each other with a correlation test, using the `cor()` function.
 
@@ -139,177 +155,4 @@ By default, this function calculates the 'pearson' *r* value, which measures a l
 * Values closer to 0 indicate a poor or non-existant correlation.
 * A value of -1 indicates a perfect 'negative' correlation, with the x-axis variable increasing and the y-axis variable decreasing. 
 
-Values in between, like the `-0.4579879` above, suggest some degree of dispersion from a perfect line. We can conclude here that in the dataset we're assessing, as wind speed increases, recorded temperature decreases - although the correlation is not perfect. 
-
-
-
-<!-- data(airquality) -->
-
-<!-- plotme = airquality[,c("Temp","Ozone")] -->
-<!-- plotme = plotme[complete.cases(plotme),] -->
-<!-- plotme = plotme[order(plotme$Temp),] -->
-<!-- plot(x = plotme$Temp,y = plotme$Ozone,pch=20,col="slategrey") -->
-<!-- #abline(lm(Ozone ~ Temp,data=plotme)) -->
-<!-- l1 = loess(Ozone ~ Temp,data = plotme,span = 1) -->
-<!-- l2 = loess(Ozone ~ Temp,data = plotme,span = 0.5) -->
-<!-- l3 = loess(Ozone ~ Temp,data = plotme,span = 0.25) -->
-
-<!-- p1 = predict(l1) -->
-<!-- p2 = predict(l2) -->
-<!-- p3 = predict(l3) -->
-
-<!-- lines(p1,x=plotme$Temp,col="red",lwd=2) -->
-<!-- #lines(p2,x=plotme$Temp,col="red",lwd=2) -->
-<!-- #lines(p3,x=plotme$Temp,col="blue",lwd=2) -->
-
-
-
-<!-- p1e = predict(l1,se=T) -->
-<!-- lines(plotme$Temp,y=p1e$fit-1.96*p1e$se.fit,lty=2,col="red") -->
-<!-- lines(plotme$Temp,y=p1e$fit+1.96*p1e$se.fit,lty=2,col= -->
-
-
-<!-- # 2. Calculate Survival -->
-
-<!-- We can use a couple of handy functions from `survival` to take a look at the data and make some summaries. An important function to use will be `Surv()`. -->
-
-<!-- ```{r} -->
-<!-- lungsurvival = Surv(lung$time,lung$status) # make a survival time object -->
-<!-- head(lungsurvival) # take a look at the first 5 elements -->
-<!-- ``` -->
-
-<!-- The object we made here is essentially a vector of survival times, with `+` symbols appended to show when censoring has taken place. We will use this going forward.  -->
-
-<!-- ### Fitting the Data -->
-
-<!-- The `survfit()` function is a key element of the survival package, and it fits survival curves to our data. We can have a quick go as follows. -->
-<!-- ```{r} -->
-<!-- survfit(formula = lungsurvival ~ 1) # make the simplest survival curve object -->
-<!-- ``` -->
-<!-- This is another formula interface function - see our other articles. We're telling `survfit()` to fit a survival curve (more on these later) to the data (the `lungsurvival` object we made), and we can tell it to use the whole dataset by simply including a `1` in the formula. This call outputs: -->
-
-<!-- * The number of entries and the number of events in the dataset. -->
-<!-- * Summary statistics - the **median survival**, along with the **95% confidence interval**. -->
-
-<!-- For the record, we can also do this: `survfit(formula = Surv(time,status) ~ 1,data=lung)` - note the modified syntax with the data parameter. -->
-
-<!-- We can look more closely at how the survival proportion over time by using the `summary()` function. For convenience we can save the fit to a variable called `lungfit`. -->
-
-<!-- ```{r} -->
-<!-- lungfit = survfit(formula = lungsurvival ~ 1) # save the fit  -->
-<!-- summary(lungfit, times = c(0,100,200,500,1000)) # we can specify whatever times we like -->
-<!-- ``` -->
-<!-- Nice. This sort of information is frequently used in **risk tables**. What we are calculating using these functions is called the *'Kaplan-Meier estimator'*, a non-parametric way to estimate survival probabilities over time.  -->
-
-<!-- We can also convert these data into a simple plot: the `survival` package contains instructions to tell the basic R `plot()` function how to plot it. -->
-
-<!-- ```{r fig.height=4, fig.width=5,fig.align='center'} -->
-<!-- plot(survfit(formula = lungsurvival ~ 1, data=lung),  -->
-<!--      ylab = "Survival Proportion",  -->
-<!--      xlab = "Time", -->
-<!--      main = "Overall Lung Dataset Survival") -->
-<!-- ``` -->
-
-<!-- Ok, looking plausible. This is often called a **Kaplan-Meier Curve** (or Kaplan-Meier Plot).  -->
-
-<!-- ### Stratify by a Variable -->
-
-<!-- There are multiple variables in the `lung` data set. We can explore them with a modified call to `survfit`, substituting the `1` with the name of the variable, and including a *data* argument to tell the function where to find it.  -->
-
-<!-- ```{r} -->
-<!-- survfit(formula = lungsurvival ~ sex, data=lung) # performance status of individuals -->
-<!-- ``` -->
-
-<!-- This shows a breakdown of survival statistics (ie. median survival and confidence intervals) for **each level of the variable** in the data. Do these values look different? Can we observe a trend? -->
-
-<!-- ```{r fig.height=4, fig.width=5,fig.align='center'} -->
-<!-- plot(survfit(formula = lungsurvival ~ sex, data=lung),  -->
-<!--      ylab = "Survival Proportion",  -->
-<!--      xlab = "Time",  -->
-<!--      main = "Lung Dataset Split by Variable") -->
-<!-- ``` -->
-
-<!-- This approach works best for *categorical* variables (the `ph.ecog` variable would work well too); if we tried it with a *continuous* one it looks rather odd (`meal.cal`, for example). Try it out? -->
-
-<!-- ### Stratify by Multiple Variables -->
-
-<!-- The `survfit()` function is clever - we can give it multiple variables at the same time and it calculates survival proportions for each combination of the variables.  -->
-
-<!-- ```{r} -->
-<!-- survfit(formula = lungsurvival ~ sex + ph.ecog, data=lung) # performance status of individuals -->
-<!-- ``` -->
-
-<!-- We can see that the different levels of these variables are shown in the output - and that the usage of `summary()` (like above) will show a detailed output. -->
-
-<!-- ```{r fig.height=4, fig.width=5,fig.align='center'} -->
-<!-- plot(survfit(formula = lungsurvival ~ sex + ph.ecog, data=lung),  -->
-<!--      ylab = "Survival Proportion",  -->
-<!--      xlab = "Time",  -->
-<!--      main = "Lung Dataset Split by Two Variables") -->
-<!-- ``` -->
-<!-- These plots are a bit bland. We can improve them a little. -->
-
-<!-- # 3. Tweaking the Plots -->
-
-<!-- We can add colours and a legend to the lines in these plots. Colours are assigned by the levels of the variable, as can be seen in the `survfit()` call. Here we'll look at the **ECOG performance status** variable - which has four levels.  -->
-
-<!-- ```{r} -->
-<!-- survfit(formula = lungsurvival ~ ph.ecog, data=lung) -->
-<!-- lungfit = survfit(formula = lungsurvival ~ ph.ecog, data=lung) # make an object for the fit -->
-<!-- ``` -->
-
-<!-- We can use this to plot with. -->
-
-<!-- ```{r fig.height=4, fig.width=5,fig.align='center'} -->
-<!-- oldpar = par(no.readonly = TRUE) # make a copy of the default graphical parameters -->
-<!-- par(bg = "ivory") # this lets us specify an overall background colour -->
-
-
-<!-- plot(lungfit, # plot this using 'plot'  -->
-<!--      ylab = "Survival Proportion",  -->
-<!--      xlab = "Time",  -->
-<!--      main = "Lung Dataset With Colours", -->
-<!--      mark.time = T, # include little tick marks to indicate when censoring happens -->
-<!--      lwd = 2, # increase the line thickness -->
-<!--      col = c("darkorange","darkorange2","darkorange3","darkorange4"), # add colours in the order we want -->
-<!--      bty = "n", # remove the border -->
-<!--      las = 1) # adjust the angle of the axis numbers -->
-
-<!-- legend("topright", # you can feed in x-y coordinates, or just a keyword -->
-<!--        legend = names(lungfit$strata), # give it the unique levels -->
-<!--        col=c("darkorange","darkorange2","darkorange3","darkorange4"), # colours in the same order -->
-<!--        bg = NA, # remove the background colour -->
-<!--        lty=1, # add a line to the legend -->
-<!--        lwd=2, # thicker line -->
-<!--        box.lty=0) # remove legend border -->
-
-<!-- par(oldpar) -->
-<!-- ``` -->
-<!-- Changing various elements is pretty straightforward - and in this case we can see that there's a reduction in survival as the value for `ph.ecog` increases. As this value relates to an overall measurement of how healthy a patient is, this makes sense.  -->
-
-<!-- # 4. Do a Statistical Test -->
-
-<!-- To continue exploring these data, we can perform an appropriate statistical test to compare the survival distributions of these curves, with a **null hypothesis** that the the groups have no difference. We aren't diving deep into this topic here, and there are many other resources to learn more about this.  -->
-
-<!-- The `survdiff()` function is straightforward to use, with the same syntax as the `survfit()` function we used earlier. This performs a *log-rank test*. -->
-
-<!-- ```{r} -->
-<!-- survdiff(formula = lungsurvival ~ sex, data=lung) # survdiff! -->
-<!-- ``` -->
-<!-- We can also apply this test to a variable that has more than two groups - like `ph.ecog` (which has four levels), and it generates a p-value, but it doesn't explicitly tell use which groups are different to each other, just that *overall* there is a difference. It's a starting point, but for complicated survival data with multiple variables we may need more than a simple log-rank test... -->
-
-<!-- ```{r} -->
-<!-- survdiff(formula = lungsurvival ~ ph.ecog, data=lung) # different variable to above -->
-<!-- ecog_p = survdiff(formula = lungsurvival ~ ph.ecog, data=lung) -->
-<!-- ``` -->
-
-<!-- # 5. Final Thoughts -->
-
-<!-- This article is really just a start to performing survival analysis, and there's certainly more to cover. -->
-<!-- The key elements to remember are as follows: -->
-
-<!-- - To estimate **survival probabilities** over time, you need *time* and *censoring status* data. -->
-<!-- - The `survival` package is the core library for this type of analysis in R. -->
-<!-- - It allows you to collate **summary statistics** about your overall population, and about subgroups.  -->
-<!-- - You can plot **survival curves** (Kaplan-Meier plots) to visualise these. -->
-<!-- - A **statistical test** like the log-rank test can help us draw conclusions from the data. -->
+Values in between, like the `-0.4579879` above, suggest some degree of dispersion from a perfect line. 
