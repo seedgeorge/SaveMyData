@@ -113,21 +113,21 @@ The `-0.4579879` above, therefore, suggests a moderate negative correlation, whi
 Incidentally, we could use a different type of *correlation coefficient* - such as Spearman's, by changing the code a little.
 
 ```{r spearmancor}
-cor(x = airquality$Wind, y = airquality$Temp, method="spearman")
+cor(x = airquality$Wind, y = airquality$Temp, method="spearman") # if you use the method argument you can choose a different statistical method
 ```
 
 # 5. Plot a Straight Line
 
-These data seem to have some correlation, and it'd be good to visualise that. In fact, they look linear - we could probably summarise that with a straight line.
+These data seem to have some correlation, and it's good to visualise that. In fact, they look linear - we could probably summarise that with a **straight line**.
 
 We can calculate a 'linear regression' (or 'linear model'), which will let us both quantify the relationship a bit more between the variables, and give us the information needed to plot a straight line onto the graph. Saving it into a variable (`temp_wind_line`) will be useful later.
 
 ```{r lm}
 temp_wind_line = lm(formula = Temp ~ Wind, # y-axis variable ~ x-axis variable
    data=airquality) # where are these variables found
-summary(temp_wind_line) # 
+summary(temp_wind_line) # take a quick look at it
 ```
-Using a 'formula' in a function like this will be familiar if you've read our other article on box plots - the thing to remember is that the dependent variable comes first, and in this case the dependent variable is Temperature - the one on the y-axis. 
+Using a 'formula' in a function like this will be familiar if you've read our other article on boxplots - the thing to remember is that the *dependent* variable comes first, and in this case the dependent variable is **Temperature** - the one on the y-axis. 
 
 [insert something here]
 

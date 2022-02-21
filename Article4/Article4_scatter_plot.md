@@ -174,7 +174,7 @@ cor(x = airquality$Wind, y = airquality$Temp, method="spearman")
 
 # 5. Plot a Straight Line
 
-These data seem to have some correlation, and it'd be good to visualise that. In fact, they look linear - we could probably summarise that with a straight line.
+These data seem to have some correlation, and it's good to visualise that. In fact, they look linear - we could probably summarise that with a **straight line**.
 
 We can calculate a 'linear regression' (or 'linear model'), which will let us both quantify the relationship a bit more between the variables, and give us the information needed to plot a straight line onto the graph. Saving it into a variable (`temp_wind_line`) will be useful later.
 
@@ -205,7 +205,7 @@ summary(temp_wind_line) #
 ## Multiple R-squared:  0.2098,	Adjusted R-squared:  0.2045 
 ## F-statistic: 40.08 on 1 and 151 DF,  p-value: 2.642e-09
 ```
-Using a 'formula' in a function like this will be familiar if you've read our other article on box plots - the thing to remember is that the dependent variable comes first, and in this case the dependent variable is Temperature - the one on the y-axis. 
+Using a 'formula' in a function like this will be familiar if you've read our other article on boxplots - the thing to remember is that the *dependent* variable comes first, and in this case the dependent variable is **Temperature** - the one on the y-axis. 
 
 [insert something here]
 
